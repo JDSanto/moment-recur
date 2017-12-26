@@ -37,6 +37,8 @@
             // Get the difference between the start date and the provided date,
             // using the required measure based on the type of rule'
             var diff = null;
+            start = start.startOf('day');
+            date = date.startOf('day');
             if (hasCalendar) {
                 start = start.clone().startOf(type);
                 date = date.clone().startOf(type);
