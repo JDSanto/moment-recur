@@ -33,10 +33,14 @@
             };
         }
 
-        function matchInterval(type, units, start, date) {
+        function matchInterval(type, units, start, date, hasCalendar) {
             // Get the difference between the start date and the provided date,
             // using the required measure based on the type of rule'
             var diff = null;
+            if (hasCalendar) {
+                start = start.clone().startOf(type);
+                date = date.clone().startOf(type);
+            }
             if (date.isBefore(start)) {
                 diff = start.diff(date, type, true);
             } else {
@@ -77,17 +81,19 @@
             "weeksOfMonth": "monthWeek",
             "weeksOfMonthByDay": "monthWeekByDay",
             "weeksOfYear": "week",
-            "monthsOfYear": "month"
+            "monthsOfYear": "month",
+            "lastWeeksOfMonthByDay": "lastMonthWeekByDay"
         };
 
         // Dictionary of ranges based on measures
         var ranges = {
-            "daysOfMonth"       : { low: 1, high: 31 },
-            "daysOfWeek"        : { low: 0, high: 6 },
-            "weeksOfMonth"      : { low: 0, high: 4 },
-            "weeksOfMonthByDay" : { low: 0, high: 4 },
-            "weeksOfYear"       : { low: 0, high: 52 },
-            "monthsOfYear"      : { low: 0, high: 11 }
+            "daysOfMonth"           : { low: 1, high: 31 },
+            "daysOfWeek"            : { low: 0, high: 6 },
+            "weeksOfMonth"          : { low: 0, high: 4 },
+            "weeksOfMonthByDay"     : { low: 0, high: 4 },
+            "weeksOfYear"           : { low: 0, high: 52 },
+            "monthsOfYear"          : { low: 0, high: 11 },
+            "lastWeeksOfMonthByDay" : { low: 0, high: 4}
         };
 
         // Private function for checking the range of calendar values
@@ -190,7 +196,8 @@
             "weeksOfMonth": "calendar",
             "weeksOfMonthByDay": "calendar",
             "weeksOfYear": "calendar",
-            "monthsOfYear": "calendar"
+            "monthsOfYear": "calendar",
+            "lastWeeksOfMonthByDay": "calendar"
         };
 
         // a dictionary of plural and singular measures
@@ -204,7 +211,8 @@
             "weeksOfMonth": "weekOfMonth",
             "weeksOfMonthByDay": "weekOfMonthByDay",
             "weeksOfYear": "weekOfYear",
-            "monthsOfYear": "monthOfYear"
+            "monthsOfYear": "monthOfYear",
+            "lastWeeksOfMonthByDay": "lastWeekOfMonthByDay"
         };
 
 
@@ -251,6 +259,10 @@
 
             if (rule.measure === 'weeksOfMonthByDay' && !this.hasRule('daysOfWeek')) {
                 throw Error("weeksOfMonthByDay must be combined with daysOfWeek");
+            }
+
+            if (rule.measure === 'lastWeeksOfMonthByDay' && !this.hasRule('daysOfWeek')) {
+                throw Error("lastWeeksOfMonthByDay must be combined with daysOfWeek");
             }
 
             // Remove existing rule based on measure
@@ -398,6 +410,9 @@
                 case "monthOfYear":
                     return "monthsOfYear";
 
+                case "lastWeekOfMonthByDay":
+                    return "lastWeeksOfMonthByDay";
+
                 default:
                     return measure;
             }
@@ -406,13 +421,16 @@
         // Private funtion to see if all rules match
         function matchAllRules(rules, date, start) {
             var i, len, rule, type;
+            var hasCalendarRule;
+
+            hasCalendarRule = !!rules.find(function(r) {return ruleTypes[r.measure] === 'calendar'});
 
             for (i = 0, len = rules.length; i < len; i++) {
                 rule = rules[i];
                 type = ruleTypes[rule.measure];
 
                 if (type === "interval") {
-                    if (!Interval.match(rule.measure, rule.units, start, date)) {
+                    if (!Interval.match(rule.measure, rule.units, start, date, hasCalendarRule)) {
                         return false;
                     }
                 } else if (type === "calendar") {
@@ -712,6 +730,13 @@
     // of the week in the month.
     moment.fn.monthWeekByDay = function(date) {
         return Math.floor((this.date()-1)/7);
+    };
+
+    // Same as `moment().monthWeekByDay()`, starting to count from the final week.
+    // A return value of 1 means the date is the 2nd occurrence of that day
+    // of the week in the month starting from the last day.
+    moment.fn.lastMonthWeekByDay = function(date) {
+        return Math.floor((moment(this).add(1, 'month').date(0).date() - this.date())/7);
     };
 
     // Plugin for removing all time information from a given date
