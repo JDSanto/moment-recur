@@ -311,7 +311,7 @@
             if (type === "all") {
                 if (this.matches(currentDate, false)) {
                     date = format ? currentDate.format(format) : currentDate.clone();
-                    dates.push(date);
+                    dates.push(date.dateOnly());
                 }
             }
 
@@ -328,7 +328,7 @@
                 // Don't match outside the date if generating all dates within start/end
                 if (this.matches(currentDate, (type==="all"?false:true))) {
                     date = format ? currentDate.format(format) : currentDate.clone();
-                    dates.push(date);
+                    dates.push(date.dateOnly());
                 }
                 if(currentDate >= this.end) {
                     break;
@@ -463,11 +463,11 @@
         // Recur Object Constrcutor
         var Recur = function(options) {
             if (options.start) {
-                this.start = moment(options.start).dateOnly();
+                this.start = moment(options.start)
             }
 
             if (options.end) {
-                this.end = moment(options.end).dateOnly();
+                this.end = moment(options.end)
             }
 
             // Our list of rules, all of which must match
@@ -500,7 +500,7 @@
             }
 
             if (date) {
-                this.start = moment(date).dateOnly();
+                this.start = moment(date)
                 return this;
             }
 
@@ -515,7 +515,7 @@
             }
 
             if (date) {
-                this.end = moment(date).dateOnly();
+                this.end = moment(date)
                 return this;
             }
 
@@ -530,7 +530,7 @@
             }
 
             if (date) {
-                this.from = moment(date).dateOnly();
+                this.from = moment(date)
                 return this;
             }
 
@@ -584,7 +584,7 @@
 
         // Creates an exception date to prevent matches, even if rules match
         Recur.prototype.except = function(date) {
-            date = moment(date).dateOnly();
+            date = moment(date)
             this.exceptions.push(date);
             return this;
         };
