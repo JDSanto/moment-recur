@@ -325,13 +325,14 @@
 
                 //console.log("Match: " + currentDate.format("L") + " - " + this.matches(currentDate, true));
 
+                if(currentDate >= this.end) {
+                    break;
+                }
+                
                 // Don't match outside the date if generating all dates within start/end
                 if (this.matches(currentDate, (type==="all"?false:true))) {
                     date = format ? currentDate.format(format) : currentDate.clone();
                     dates.push(date.dateOnly());
-                }
-                if(currentDate >= this.end) {
-                    break;
                 }
             }
 
